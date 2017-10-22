@@ -1,0 +1,42 @@
+Core: ddr3_dimm1_p0 - Instance: DramUserInst_c0|DIMM_1|ddr3_dimm1_inst
+Path, Setup Margin, Hold Margin
+"Address Command (Slow 850mV 100C Model)",0.324,0.376
+"Bus Turnaround Time (Slow 850mV 100C Model)",6.402,--
+"Core (Slow 850mV 100C Model)",0.23,0.098
+"Core Recovery/Removal (Slow 850mV 100C Model)",1.305,0.239
+"Postamble (Slow 850mV 100C Model)",0.36,0.36
+"Read Capture (Slow 850mV 100C Model)",0.213,0.181
+"Read Resync (Slow 850mV 100C Model)",2.336,17.572
+"Write (Slow 850mV 100C Model)",0.175,0.175
+"Write Leveling tDQSS (Slow 850mV 100C Model)",0.28,0.28
+"Write Leveling tDSS/tDSH (Slow 850mV 100C Model)",0.303,0.303
+"Address Command (Slow 850mV 0C Model)",0.355,0.377
+"Bus Turnaround Time (Slow 850mV 0C Model)",6.502,--
+"Core (Slow 850mV 0C Model)",0.245,0.103
+"Core Recovery/Removal (Slow 850mV 0C Model)",1.495,0.29
+"Postamble (Slow 850mV 0C Model)",0.372,0.372
+"Read Capture (Slow 850mV 0C Model)",0.216,0.184
+"Read Resync (Slow 850mV 0C Model)",2.311,17.526
+"Write (Slow 850mV 0C Model)",0.21,0.21
+"Write Leveling tDQSS (Slow 850mV 0C Model)",0.28,0.28
+"Write Leveling tDSS/tDSH (Slow 850mV 0C Model)",0.303,0.303
+"Address Command (Fast 850mV 100C Model)",0.412,0.398
+"Bus Turnaround Time (Fast 850mV 100C Model)",6.667,--
+"Core (Fast 850mV 100C Model)",0.127,0.03
+"Core Recovery/Removal (Fast 850mV 100C Model)",2.276,0.148
+"Postamble (Fast 850mV 100C Model)",0.413,0.413
+"Read Capture (Fast 850mV 100C Model)",0.225,0.201
+"Read Resync (Fast 850mV 100C Model)",2.571,17.825
+"Write (Fast 850mV 100C Model)",0.215,0.215
+"Write Leveling tDQSS (Fast 850mV 100C Model)",0.295,0.295
+"Write Leveling tDSS/tDSH (Fast 850mV 100C Model)",0.318,0.318
+"Address Command (Fast 850mV 0C Model)",0.457,0.379
+"Bus Turnaround Time (Fast 850mV 0C Model)",6.773,--
+"Core (Fast 850mV 0C Model)",0.129,0.028
+"Core Recovery/Removal (Fast 850mV 0C Model)",2.399,0.173
+"Postamble (Fast 850mV 0C Model)",0.357,0.357
+"Read Capture (Fast 850mV 0C Model)",0.238,0.214
+"Read Resync (Fast 850mV 0C Model)",2.588,17.836
+"Write (Fast 850mV 0C Model)",0.231,0.231
+"Write Leveling tDQSS (Fast 850mV 0C Model)",0.295,0.295
+"Write Leveling tDSS/tDSH (Fast 850mV 0C Model)",0.318,0.318

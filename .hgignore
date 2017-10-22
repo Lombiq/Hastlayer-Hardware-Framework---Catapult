@@ -1,0 +1,5 @@
+syntax: glob
+Project/db/*
+Project/incremental_db/*
+Project/output_files/*
+*.qws
