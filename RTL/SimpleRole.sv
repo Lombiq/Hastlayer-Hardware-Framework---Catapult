@@ -124,7 +124,22 @@ module SimpleRole
     .mem_resp_c1_in(mem_resps[1]),
     .mem_resp_grant_c1_out(mem_resp_grants[1])
     );
-    
+    	
+	Hast_ip_wrapper Hast_ip_wrapper_inst
+	(
+		.DataIn      (32'h87654321),
+		.DataOut     (),
+		.CellIndex   (),
+		.ReadEnable  (),
+		.WriteEnable (),
+		.ReadsDone   (true),
+		.WritesDone  (true),
+		.MemberId    (1),
+		.Reset       (rst),
+		.Started     (true),
+		.Finished    (),
+		.Clock       (clk)
+	);
 
     // Softreg config
     always@* begin
