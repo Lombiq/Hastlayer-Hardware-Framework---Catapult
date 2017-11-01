@@ -35,14 +35,35 @@ vlog -incr -sv ../RTL/SimpleDram.sv
 vlog -incr -sv ../RTL/DramInterleaver.sv
 vlog -incr -sv ../RTL/Role.sv
 vlog -incr -sv ../RTL/SimpleRole.sv
+vcom -explicit -error -warning ../RTL/Hast_IP.vhd
+vcom -explicit -error -warning ../RTL/Hast_ip_wrapper.vhd
 
 # Incrementally compile top-level simulation model
 echo "Compiling Catapult top-level simulation file"
 vlog -incr -sv -L altera_mf_ver ../../Sim/SimTop.sv
+
+#vsim ent arch <<!
+#	log -r *
+#	run 100
+#	do wave.do
+#	quit -f
+#! 
+
+#vsim -wlf vsim.wlf -do wave.do
+#view wave
+#do wave.do
+#view structure 
+#view signals
 
 # Loading design in simulator
 echo "Loading design"
 vsim SimTop -t ns -sv_lib Source -L altera_mf_ver
 
 echo "Running simulation"
+log -r /*
+vsim -wlf vsim.wlf -do wave.do
 run -all
+
+
+
+#vsim -view vsim.wlf -do wave.do
