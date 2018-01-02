@@ -89,18 +89,20 @@ int main()
 	FPGA_HANDLE fpgaHandle;
 	DWORD *pInputBuffer, *pOutputBuffer;
 	DWORD whichBuffer = 17; // which buffer (aka slot) to send the message on
+	//DWORD sendBytes = 112, recvBytes;
 	DWORD sendBytes = 112, recvBytes;
+	//DWORD sendBytes = 163840, recvBytes;
 	// Open handle to FPGA
 	FPGA_CreateHandle(&fpgaHandle, PCIE_HIP_NUM, 0x0, NULL, NULL);
 	// Grab pinned input and output buffers
+	enablePCIe(fpgaHandle);
 	FPGA_GetInputBufferPointer(fpgaHandle, whichBuffer, &pInputBuffer);
 	FPGA_GetOutputBufferPointer(fpgaHandle, whichBuffer, &pOutputBuffer);
 	// Write 112B (7 words) of random data into input buffer
-	for (DWORD i = 0; i < sendBytes / sizeof(DWORD); i++) 
+	for (DWORD i = 0; i < sendBytes / sizeof(DWORD); i++)
 	{
-		//pInputBuffer[i] = rand();
-		pInputBuffer[i] = 100 + i;//rand();
-		printf("Input buffer content: %d\n", pInputBuffer[i]);
+		pInputBuffer[i] = 1 + i*2;
+		printf("Input buffer content: %X\n", pInputBuffer[i]);
 	}
 	// Send the data to the FPGA
 	FPGA_SendInputBuffer(fpgaHandle, whichBuffer, sendBytes, 1);
@@ -108,9 +110,9 @@ int main()
 	FPGA_WaitOutputBuffer(fpgaHandle, whichBuffer, &recvBytes, 1);
 	// Consume the contents of pOutputBuffer
 
-	for (DWORD i = 0; i < sendBytes / sizeof(DWORD); i++)
+	for (DWORD i = 0; i < recvBytes / sizeof(DWORD); i++)
 	{				
-		printf("Output buffer content: %d\n", pOutputBuffer[i]);
+		printf("Output buffer content: %X\n", pOutputBuffer[i]);
 	}
 
 	// ...
