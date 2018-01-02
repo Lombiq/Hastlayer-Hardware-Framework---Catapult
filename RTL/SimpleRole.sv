@@ -98,6 +98,26 @@ module SimpleRole
     assign mem_resp_grants[1] = 1'b0;
     */
     
+	//Hast_ip_wrapper signals
+	//logic [511:0] Hast_IP_Data_in_sig;
+	logic [63:0] Hast_IP_Read_Addr_out_sig;
+	logic [63:0] Hast_IP_Write_Addr_out_sig;
+	//logic [511:0] Hast_IP_Data_out_sig;
+	 
+	logic [511:0] Hast_IP_Data_in;
+	logic [31:0] Hast_IP_Read_Addr_out;
+	logic [31:0] Hast_IP_Write_Addr_out;
+	logic [511:0] Hast_IP_Data_out; 	
+	logic [31:0] Hast_IP_MemberID_in;
+	logic Hast_IP_Started_in;
+	logic Hast_IP_Write_Ena_out;
+	logic Hast_IP_Read_Ena_out;
+	logic Hast_IP_Reads_Done_in;
+	logic Hast_IP_Writes_Done_in;
+	logic Hast_IP_Finished_out;
+	
+	logic [127:0]PCI_outdata;
+	
     DramInterleaver interleaver
     (
     // User clock and reset
@@ -124,21 +144,23 @@ module SimpleRole
     .mem_resp_c1_in(mem_resps[1]),
     .mem_resp_grant_c1_out(mem_resp_grants[1])
     );
-    	
-	Hast_ip_wrapper Hast_ip_wrapper_inst
+    
+	 	Hast_ip_wrapper Hast_ip_wrapper_inst
 	(
-		.DataIn      (32'h87654321),
-		.DataOut     (),
-		.CellIndex   (),
-		.ReadEnable  (),
-		.WriteEnable (),
-		.ReadsDone   (true),
-		.WritesDone  (true),
-		.MemberId    (1),
-		.Reset       (rst),
-		.Started     (true),
-		.Finished    (),
-		.Clock       (clk)
+		.Hast_IP_Clk_in          (clk),      
+		.Hast_IP_Rst_in          (rst),
+		.Hast_IP_MemberID_in     (Hast_IP_MemberID_in),
+		.Hast_IP_Data_in         (Hast_IP_Data_in),
+		.Hast_IP_Data_out        (Hast_IP_Data_out),
+		.Hast_IP_Read_Addr_out   (Hast_IP_Read_Addr_out),
+		.Hast_IP_Read_Ena_out    (Hast_IP_Read_Ena_out),
+		.Hast_IP_Write_Addr_out  (Hast_IP_Write_Addr_out),
+		.Hast_IP_Write_Ena_out   (Hast_IP_Write_Ena_out),
+		.Hast_IP_Started_in      (Hast_IP_Started_in),
+		.Hast_IP_Finished_out    (Hast_IP_Finished_out),
+		.Hast_IP_Reads_Done_in   (Hast_IP_Reads_Done_in),
+		.Hast_IP_Writes_Done_in  (Hast_IP_Writes_Done_in),
+		.Hast_IP_Performance_out ()
 	);
 
     // Softreg config
@@ -231,6 +253,8 @@ module SimpleRole
     
     typedef enum {
         WRITE,
+HAST_READ,
+		  HAST_WRITE,
         READ
     } FSMState;
     
@@ -243,13 +267,21 @@ module SimpleRole
     reg[31:0] jobSize;
     reg[31:0] next_jobSize;
     
+	 assign Hast_IP_Read_Addr_out_sig[63:0]  = {32'b0 , Hast_IP_Read_Addr_out};
+	 assign Hast_IP_Write_Addr_out_sig[63:0] = {32'b0 , Hast_IP_Write_Addr_out};
     always@* begin
         next_state = state;
         next_writeAddr = writeAddr;
         next_readAddr = readAddr;
         next_jobSize = jobSize;
         
+		  //
+		  mem_interleaved_resp_grant = 1'b0;
+		  jobRespQ_deq = 1'b0;
+        pcie_packet_out = '{valid: 1'b0, data: 512'b0, slot: 16'b0, pad: 4'b0, last: 1'b0};
+		  //
         mem_interleaved_req = '{valid: 0, isWrite: 1'b0, addr: 64'b0, data: 512'b0};
+PCI_outdata = 127'b0;
         
         loopbackQ_deq = 1'b0;
         
@@ -270,23 +302,67 @@ module SimpleRole
                     jobRespQ_in = '{last: loopbackQ_out.last, slot: loopbackQ_out.slot, pad: loopbackQ_out.pad};
                         
                     if(loopbackQ_out.last) begin
-                        next_state = READ;
+						      Hast_IP_Started_in = 1'b1;
+                        next_state = HAST_READ;
                     end
                 end
             end
         end
+		  else if(state == HAST_READ) begin  
+            mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b0, addr: 64'b0, data: 512'b0};
+            //mem_interleaved_resp_grant = 1'b1;				
+            if(mem_interleaved_req_grant) begin		
+				    
+		             if (Hast_IP_Read_Ena_out) begin
+					         Hast_IP_Data_in = mem_interleaved_resp.data;
+					    	   Hast_IP_Reads_Done_in = mem_interleaved_resp.valid;
+								//mem_interleaved_resp_grant = 1'b1;
+	 							next_state = HAST_WRITE;		                     							
+						 end
+						 else begin
+						     Hast_IP_MemberID_in = mem_interleaved_resp.data[31:0]; 	                    						  
+					    end
+				end
+        end
+		  else if(state == HAST_WRITE) begin
+		  mem_interleaved_resp_grant = 1'b1;
+		  //mem_interleaved_req = '{valid: 1'b0, isWrite: 1'b0, addr: 0, data: 512'b0};
+	         if (Hast_IP_Write_Ena_out == 1'b1) begin		  
+		          //mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b1, addr: Hast_IP_Write_Addr_out_sig, data: Hast_IP_Data_out};  
+					 mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b1, addr: 64'b0, data: Hast_IP_Data_out}; 
+					 if(mem_interleaved_req_grant) begin
+                    next_state = READ;                   
+                end
+            end
+        end
+		  		  
         else if(state == READ) begin
         
             mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b0, addr: readAddr, data: 512'b0};
             
             if(mem_interleaved_req_grant) begin
+                Hast_IP_Writes_Done_in = mem_interleaved_resp.valid;
                 next_readAddr = readAddr + 64'd64;
                 next_jobSize = jobSize - 32'd1;
                 
-                if(next_jobSize == 32'd0) begin
+                //if(next_jobSize == 32'd0) begin
+					 if(jobRespQ_empty == 1'b1) begin					 
                     next_state = WRITE;
                 end
+					 
+					 if(mem_interleaved_resp.valid && !jobRespQ_empty) begin
+                    pcie_packet_out = '{valid: 1'b1, data: mem_interleaved_resp.data, slot: jobRespQ_out.slot, pad: jobRespQ_out.pad, last: jobRespQ_out.last};
+            
+                if(pcie_grant_in) begin
+                    mem_interleaved_resp_grant = 1'b1;						  
+                    jobRespQ_deq = 1'b1;
+                end
             end
+				
+				
+        end
+				
+				
         end
     end
     
@@ -309,11 +385,11 @@ module SimpleRole
     
     //wire readRespJob_last = !jobRespQ_empty && ((readRespJobSize + 1) == jobRespQ_out.size);
     
-    always@* begin
-        mem_interleaved_resp_grant = 1'b0;
-        jobRespQ_deq = 1'b0;
+ /*   always@* begin
+        //mem_interleaved_resp_grant = 1'b0;
+        //jobRespQ_deq = 1'b0;
         
-        pcie_packet_out = '{valid: 1'b0, data: 512'b0, slot: 16'b0, pad: 4'b0, last: 1'b0};
+        //pcie_packet_out = '{valid: 1'b0, data: 512'b0, slot: 16'b0, pad: 4'b0, last: 1'b0};
         
         if(mem_interleaved_resp.valid && !jobRespQ_empty) begin
             pcie_packet_out = '{valid: 1'b1, data: mem_interleaved_resp.data, slot: jobRespQ_out.slot, pad: jobRespQ_out.pad, last: jobRespQ_out.last};
@@ -324,5 +400,5 @@ module SimpleRole
             end
         end
     end
-    
+   */ 
 endmodule
