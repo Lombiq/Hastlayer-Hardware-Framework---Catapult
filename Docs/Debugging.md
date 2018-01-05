@@ -45,5 +45,14 @@ The solution in this case is the following:
 - After the batch mode simulation finished, you need to start Modelsim GUI, and load the .wlf file.
 If you get into any Modelsim related issue, [Modelsim User's Manual](https://www.microsemi.com/document-portal/doc_view/131619-modelsim-user) is a good start for searching. 
 
+###FPGA error
+
+Rarely we need to encounter the issue that the FPGA gets stuck. It turns out that the FPGA can not be reconfigured, you can't rewrite the flash memory, you can't get any diagnostics data, etc.
+In this case you might get an error message: "Device driver is disabled. Cannot enable Device driver."
+![Device driver error](Images/Device_driver_error.png)  
+- According to the Catapult Support answer, if you try to program a .sof binary to the FPGA (instead of an .rpd file), the device goes to a non-responsive state. The workaround is to create an .rpd of your signaltap image and load it into the Factory Slot on the flash using rsu.exe -write <filename.rpd>, then use rsu.pgm -reconfig to switch to your signaltap image and then you should be able to run signaltap as usual.
+- There is no possibility to power-cycle the FPGA remotely, so the best choise in this case it to ask the Catapult Support to turn on and off the device (catapsup@microsoft.com).
+- Another workaround is to go to the Windows Device Manager, right click on the “Catapult FPGA device” and make sure it is enabled.  If it isn’t, check the properties and see if there is an error.  You can also attempt to enable the card from there. 
+
 
                                             
