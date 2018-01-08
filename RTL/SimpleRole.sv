@@ -309,7 +309,7 @@ PCI_outdata = 127'b0;
             end
         end
 		  else if(state == HAST_READ) begin  
-            mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b0, addr: 64'b0, data: 512'b0};
+            mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b0, addr: Hast_IP_Read_Addr_out, data: 512'b0};
             //mem_interleaved_resp_grant = 1'b1;				
             if(mem_interleaved_req_grant) begin		
 				    
@@ -329,7 +329,7 @@ PCI_outdata = 127'b0;
 		  //mem_interleaved_req = '{valid: 1'b0, isWrite: 1'b0, addr: 0, data: 512'b0};
 	         if (Hast_IP_Write_Ena_out == 1'b1) begin		  
 		          //mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b1, addr: Hast_IP_Write_Addr_out_sig, data: Hast_IP_Data_out};  
-					 mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b1, addr: 64'b0, data: Hast_IP_Data_out}; 
+					 mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b1, addr: Hast_IP_Write_Addr_out, data: Hast_IP_Data_out}; 
 					 if(mem_interleaved_req_grant) begin
                     next_state = READ;                   
                 end
