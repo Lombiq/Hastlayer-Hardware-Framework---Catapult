@@ -277,8 +277,6 @@ architecture Imp of Hast_IP is
 	signal \PC0_op\              : integer range -1048576 to 1048575;
 		  
 	signal First_slot_finished   : std_logic;
-	signal alma : std_logic_vector(1 downto 0);
-	signal korte : std_logic_vector(1 downto 0);
 		
 	--SM_Primecalc_0 state machine states
 	type SM_Primecalculator_0 is (
@@ -865,18 +863,11 @@ begin
 						
 					when ST004_ArePrimeNumbers =>
 						if \ReadsDone\ = true then --Wait until \ReadsDone\
-						--ArePrimenums_DataOut <= \DataIn\;
-							--SimpleMemoryReadUInt32(\DataIn\(ArePrimenums_ReadAddr - 1 downto ArePrimenums_ReadAddr - 32), ArePrimenums_number_param);
 							if First_slot_finished = '0' then
 							    SimpleMemoryReadUInt32(\DataIn\((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32), ArePrimenums_number_param);
-							    --SimpleMemoryReadUInt32(\DataIn\((ArePrimenums_Read_IntAddr) * 32 - 1 downto 0), ArePrimenums_number_param);
 							elsif First_slot_finished = '1' then
 							    SimpleMemoryReadUInt32(\DataIn\((1 + \num_incr\) * 32 - 1 downto \num_incr\ * 32), ArePrimenums_number_param);
-							    --SimpleMemoryReadUInt32(\DataIn\((ArePrimenums_Read_IntAddr) * 32 - 1 downto 0), ArePrimenums_number_param);
 							end if;
-							--SimpleMemoryReadUInt32(\DataIn\, ArePrimenums_number_param);
-							--ArePrimenums_DataOut <= \DataIn\; 
-							--SimpleMemoryReadUInt32(\DataIn\(95 downto 64), ArePrimenums_number_param);
 							ArePrimenums_ReadEna <= false;
 							if state_SM_Primecalculator_0 = ST000_Primecalculator_0 then
 								state_SM_ArePrimeNumbers <= ST005a_ArePrimeNumbers;
@@ -923,7 +914,6 @@ begin
 					when ST006_ArePrimeNumbers =>
 						if ((\num_incr_sum\ < NumOfElements) and (\num_incr_sum\ <= 16) and (First_slot_finished = '0')) then
 							SimpleMemoryWriteBoolean(\result\, ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32));
-							--ArePrimenums_Write_IntAddr <= 2 + 1 + \num_incr\;
 							\num_incr\ <= \num_incr\ + 1;        
 							\num_incr_sum\ <= \num_incr_sum\ + 1;
 							ArePrimenums_WriteEna <= false;
@@ -931,8 +921,6 @@ begin
 							alma <= "01";
 						elsif ((\num_incr_sum\ < NumOfElements) and (\num_incr\<=16) and First_slot_finished = '1') then
 							SimpleMemoryWriteBoolean(\result\, ArePrimenums_DataOut((1 + \num_incr\) * 32 - 1 downto (\num_incr\) * 32));
-							--SimpleMemoryWriteBoolean(\result\, ArePrimenums_DataOut((\num_incr_sum\ + 1) *32 - 1 downto (\num_incr_sum\ * 32)));
-							--ArePrimenums_Write_IntAddr <= \num_incr\;
 							ArePrimenums_WriteEna <= false;
 							\num_incr\ <= \num_incr\ + 1;  
 							\num_incr_sum\ <= \num_incr_sum\ + 1;
@@ -941,49 +929,12 @@ begin
 							alma <= "10";
 						elsif (\num_incr_sum\ > 16) then 
 							ArePrimenums_WriteAddr <= ArePrimenums_WriteAddr + 64;
-							--First_slot_finished <= '1';
-							--ArePrimenums_Write_IntAddr <= 0;
 							ArePrimenums_WriteEna <= true;
 							if \WritesDone\ = true then  --Wait until \WritesDone\ 
 								ArePrimenums_WriteEna <= false;                    
 								state_SM_ArePrimeNumbers <= ST009_ArePrimeNumbers; 
-								--\num_incr\ <= \num_incr\ + 1;  
-								--\num_incr_sum\ <= \num_incr_sum\ + 1;
-								--korte <= "10";  
 							end if;                                       
-							--state_SM_ArePrimeNumbers <= ST007_ArePrimeNumbers;
-							--alma <= "11";
 						end if;
-					--@Andris: removed dummy cycle
-						
-					--when ST007_ArePrimeNumbers =>                                                         
-					--	if (\num_incr_sum\ < NumOfElements) then                  
-					--		ArePrimenums_WriteEna <= false;                                               
-					--		state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers;                            
-					--		\num_incr\ <= \num_incr\ + 1;  
-					--		\num_incr_sum\ <= \num_incr_sum\ + 1;   
-					--		 korte <= "11"; 
-					--	else
-					--		if \WritesDone\ = true then  --Wait until \WritesDone\ 
-					--			ArePrimenums_WriteEna <= false;                    
-					--			state_SM_ArePrimeNumbers <= ST009_ArePrimeNumbers; 
-					--			--\num_incr\ <= \num_incr\ + 1;  
-					--			--\num_incr_sum\ <= \num_incr_sum\ + 1;
-					--			korte <= "10";  
-					--		end if;                                       
-					--	end if;                                                                                                
-						                                                                                  
-					--when ST008_ArePrimeNumbers =>                                                         
-					--	--if (\num_incr\ < NumOfElements) then       
-					--	if (\num_incr_sum\ < NumOfElements) then                                         
-					--		state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers;                                                    
-					--	else                                                                              
-					--		state_SM_ArePrimeNumbers <= ST009_ArePrimeNumbers;  
-					--		--ArePrimenums_DataOut(511 downto \num_incr_sum\ * 32) <= \DataIn\(511 downto \num_incr_sum\ * 32);       
-					--		--ArePrimenums_DataOut(511 downto 511 - \num_incr_sum\ * 32) <= \DataIn\(511 downto 511 - \num_incr_sum\ * 32);       
-					--		--ArePrimenums_DataOut(511 downto 448) <= \DataIn\(511 downto 448);   
-					--		--ArePrimenums_DataOut(511 downto (NumOfElements - 16) * 32) <= \DataIn\(511 downto (NumOfElements -16) * 32);           
-					--	end if;
 						
 					when ST009_ArePrimeNumbers =>
 						ArePrimenums_Finish   <= true;
