@@ -195,11 +195,11 @@ entity Hast_IP is
 		\Clock\          : in  std_logic;
 		\Reset\          : in  std_logic;
 		\MemberId\       : in  integer;
-		\DataIn\         : in  std_logic_vector(511 downto 0);
-		\DataOut\        : out std_logic_vector(511 downto 0);
+		\DataIn\         : in  std_logic_vector(511 downto 0);  --\DataIn\ port's datawidth is now 512 bit
+		\DataOut\        : out std_logic_vector(511 downto 0);  --\DataOut\ port's datawidth is now 512 bit
 		\ReadEnable\     : out boolean;
 		\WriteEnable\    : out boolean;
-		\StartCellIndex\ : out integer;
+		\StartCellIndex\ : out integer;  --\CellIndex\ renamed to \StartCellIndex\
 		\Started\        : in  boolean;
 		\Finished\       : out boolean;
 		\ReadsDone\      : in  boolean;
@@ -276,7 +276,8 @@ architecture Imp of Hast_IP is
 	signal \PC0_PrimeCalcDataIn\ : integer;
 	signal \PC0_op\              : integer range -1048576 to 1048575;
 		  
-	signal First_slot_finished   : std_logic;
+	signal First_slot_finished   : std_logic; 
+	signal alma : std_logic_vector(2 downto 0);
 		
 	--SM_Primecalc_0 state machine states
 	type SM_Primecalculator_0 is (
@@ -361,7 +362,9 @@ architecture Imp of Hast_IP is
 					ST005f_ArePrimeNumbers,
 					ST006_ArePrimeNumbers,  
 					ST007_ArePrimeNumbers,
-					ST008_ArePrimeNumbers, 
+					ST007x_ArePrimeNumbers,
+					ST008_ArePrimeNumbers,
+					ST008x_ArePrimeNumbers, 
 					ST009_ArePrimeNumbers
 					); 
 	signal state_SM_ArePrimeNumbers : SM_ArePrimeNumbers; 
@@ -837,12 +840,11 @@ begin
 						
 					when ST002_ArePrimeNumbers =>
 						NumOfElements            :=  \number.iter\;
-						state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers; --ST003_ArePrimeNumbers;
+						state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers; 
 						ArePrimenums_DataOut  <= \DataIn\;
 						
 					when ST003_ArePrimeNumbers =>  
 						if (ArePrimenums_Read_IntAddr <= 15 and First_slot_finished = '0') then  
-							--ArePrimenums_ReadAddr <= 0;
 							ArePrimenums_Read_IntAddr <= 2 + 1 + \num_incr\;
 							ArePrimenums_ReadEna  <= false;
 							state_SM_ArePrimeNumbers <= ST004_ArePrimeNumbers;
@@ -856,17 +858,27 @@ begin
 							ArePrimenums_Read_IntAddr <= 0;
 							ArePrimenums_ReadEna  <= true;
 							First_slot_finished <= '1';
-							--ArePrimenums_DataOut  <= \DataIn\;
 							state_SM_ArePrimeNumbers <= ST004_ArePrimeNumbers;
 						end if;
-					--@Andris: removed dummy cycle
 						
 					when ST004_ArePrimeNumbers =>
 						if \ReadsDone\ = true then --Wait until \ReadsDone\
 							if First_slot_finished = '0' then
-							    SimpleMemoryReadUInt32(\DataIn\((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32), ArePrimenums_number_param);
+								
+								--This format works in Vivado and iSim, but not in Altera-Modelsim, however Quartus can synthesize it. Using the function's content instead of it in the following lines
+								---------------
+								--SimpleMemoryReadUInt32(\DataIn\((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32), ArePrimenums_number_param);
+								ArePrimenums_number_param <= to_integer(unsigned(\DataIn\((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32)));
+								---------------
+								
 							elsif First_slot_finished = '1' then
-							    SimpleMemoryReadUInt32(\DataIn\((1 + \num_incr\) * 32 - 1 downto \num_incr\ * 32), ArePrimenums_number_param);
+								
+								--This format works in Vivado and iSim, but not in Altera-Modelsim, however Quartus can synthesize it. Using the function's content instead of it in the following lines
+								---------------                                                                                                                                                         
+								--SimpleMemoryReadUInt32(\DataIn\((1 + \num_incr\) * 32 - 1 downto \num_incr\ * 32), ArePrimenums_number_param);
+								ArePrimenums_number_param <= to_integer(unsigned(\DataIn\((1 + \num_incr\) * 32 - 1 downto \num_incr\ * 32)));
+								---------------
+								
 							end if;
 							ArePrimenums_ReadEna <= false;
 							if state_SM_Primecalculator_0 = ST000_Primecalculator_0 then
@@ -885,8 +897,14 @@ begin
 						
 					when ST005b_ArePrimeNumbers =>
 						ArePrimenums_StartPrimeCalc_0 <= '0';
-						if ArePrimenums_FinishedPrimecalc = '1' then 
-							state_SM_ArePrimeNumbers <= ST006_ArePrimeNumbers;
+						if ArePrimenums_FinishedPrimecalc = '1' then
+							if NumOfElements < 16 then
+								state_SM_ArePrimeNumbers <= ST006_ArePrimeNumbers;
+							elsif ((NumOfElements > 16) and (First_slot_finished = '0')) then
+								state_SM_ArePrimeNumbers <= ST007_ArePrimeNumbers;
+							elsif ((NumOfElements > 16) and (First_slot_finished = '1')) then
+								state_SM_ArePrimeNumbers <= ST008_ArePrimeNumbers;
+							end if;
 						end if;
 						
 					when ST005c_ArePrimeNumbers =>
@@ -911,30 +929,115 @@ begin
 							state_SM_ArePrimeNumbers <= ST006_ArePrimeNumbers;
 						end if;
 						
-					when ST006_ArePrimeNumbers =>
-						if ((\num_incr_sum\ < NumOfElements) and (\num_incr_sum\ <= 16) and (First_slot_finished = '0')) then
-							SimpleMemoryWriteBoolean(\result\, ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32));
-							\num_incr\ <= \num_incr\ + 1;        
-							\num_incr_sum\ <= \num_incr_sum\ + 1;
-							ArePrimenums_WriteEna <= false;
+					when ST006_ArePrimeNumbers =>  
+					--When we want to process less than one memory slot of data (512 bits)      
+						if (\num_incr\ < NumOfElements) then
+							--This format works in Vivado and iSim, but not in Altera-Modelsim, however Quartus can synthesize it. Using the function's content instead of it in the following lines
+							---------------                                                                                                                                                         
+							--SimpleMemoryWriteBoolean(\result\, ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32));                                                     
+							case \result\ is                                                                                                                                                        
+								when '0'    => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"00000000";                                                               
+								when '1'    => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"11111111";                                                               
+								when others => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"00000000";                                                            
+							end case;                                                                                                                                                               
+							--------------                                                                                                                                                          
+							\num_incr\               <= \num_incr\ + 1;                                                                                                                                           
+							--\num_incr_sum\           <= \num_incr_sum\ + 1;                                                                                                                                   
+							ArePrimenums_WriteEna    <= false;                   
 							state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers;
-							alma <= "01";
-						elsif ((\num_incr_sum\ < NumOfElements) and (\num_incr\<=16) and First_slot_finished = '1') then
-							SimpleMemoryWriteBoolean(\result\, ArePrimenums_DataOut((1 + \num_incr\) * 32 - 1 downto (\num_incr\) * 32));
-							ArePrimenums_WriteEna <= false;
-							\num_incr\ <= \num_incr\ + 1;  
-							\num_incr_sum\ <= \num_incr_sum\ + 1;
-							ArePrimenums_DataOut(511 downto (NumOfElements - 16) * 32) <= \DataIn\(511 downto (NumOfElements -16) * 32);
-							state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers;
-							alma <= "10";
-						elsif (\num_incr_sum\ > 16) then 
-							ArePrimenums_WriteAddr <= ArePrimenums_WriteAddr + 64;
-							ArePrimenums_WriteEna <= true;
-							if \WritesDone\ = true then  --Wait until \WritesDone\ 
-								ArePrimenums_WriteEna <= false;                    
-								state_SM_ArePrimeNumbers <= ST009_ArePrimeNumbers; 
-							end if;                                       
+						elsif (\num_incr\ = NumOfElements) then
+							ArePrimenums_WriteEna <= true;  
+							if \WritesDone\ = true then                        
+								ArePrimenums_WriteEna <= false;                   
+								state_SM_ArePrimeNumbers <= ST009_ArePrimeNumbers;                                    
+							end if;                                                                  
 						end if;
+						
+					when ST007_ArePrimeNumbers => 
+					--When we want to process more than one memory slot of data (512 bits), and this is the first slot
+						if (\num_incr_sum\ < 15) then
+							--This format works in Vivado and iSim, but not in Altera-Modelsim, however Quartus can synthesize it. Using the function's content instead of it in the following lines
+							---------------                                                                                                                                                         
+							--SimpleMemoryWriteBoolean(\result\, ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32));                                                     
+							case \result\ is                                                                                                                                                        
+								when '0'    => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"00000000";                                                               
+								when '1'    => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"11111111";                                                               
+								when others => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"00000000";                                                            
+							end case;                                                                                                                                                               
+							--------------                                                                                                                                                          
+							\num_incr\               <= \num_incr\ + 1;                                                                                                                                           
+							\num_incr_sum\           <= \num_incr_sum\ + 1;                                                                                                                                   
+							ArePrimenums_WriteEna    <= false;                
+							state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers;
+							
+						elsif (\num_incr_sum\ = 15) then
+							case \result\ is                                                                                                                                                        
+								when '0'    => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"00000000";                                                               
+								when '1'    => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"11111111";                                                               
+								when others => ArePrimenums_DataOut((3 + \num_incr\) * 32 - 1 downto (2 + \num_incr\) * 32) <= X"00000000";                                                            
+							end case;                                                                                                                                                               
+							--------------                                                                                                                                                          
+							\num_incr\               <= \num_incr\ + 1;                                                                                                                                           
+							\num_incr_sum\           <= \num_incr_sum\ + 1;
+							
+							--ArePrimenums_WriteAddr   <= ArePrimenums_WriteAddr + 64;
+							ArePrimenums_WriteEna    <= true;  
+							--if \WritesDone\ = true then                           
+							--	ArePrimenums_WriteEna <= false;                      
+								state_SM_ArePrimeNumbers <= ST007x_ArePrimeNumbers; --ST003_ArePrimeNumbers;                         
+							--end if;                                               
+						end if;
+							
+					when ST007x_ArePrimeNumbers =>
+						if \WritesDone\ = true then                           
+							ArePrimenums_WriteEna <= false;    
+							ArePrimenums_WriteAddr <= ArePrimenums_WriteAddr + 64;                  
+							state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers;                         
+						end if;   
+							
+					when ST008_ArePrimeNumbers =>
+					--When we want to process more than one memory slot of data (512 bits), and this is not the first slot
+					--if ((\num_incr\ < 16) and (\num_incr\ < NumOfElements - 14)) then
+					if ((\num_incr\ < 15) and (\num_incr_sum\ < NumOfElements +2)) then
+						--This format works in Vivado and iSim, but not in Altera-Modelsim, however Quartus can synthesize it. Using the function's content instead of it in the following lines
+						---------------                                                                                                                                                         
+						--SimpleMemoryWriteBoolean(\result\, ArePrimenums_DataOut((1 + \num_incr\) * 32 - 1 downto (\num_incr\) * 32));                                                         
+						case \result\ is                                                                                                                                                        
+							when '0' => ArePrimenums_DataOut((1 + \num_incr\) * 32 - 1 downto (\num_incr\) * 32) <= X"00000000";                                                                   
+							when '1' => ArePrimenums_DataOut((1 + \num_incr\) * 32 - 1 downto (\num_incr\) * 32) <= X"11111111";                                                                   
+							when others => ArePrimenums_DataOut((1 + \num_incr\) * 32 - 1 downto (\num_incr\) * 32) <= X"00000000";                                                                
+						end case;                                                                                                                                                               
+						-------------- 
+						\num_incr\               <= \num_incr\ + 1;       
+						\num_incr_sum\           <= \num_incr_sum\ + 1;   
+						ArePrimenums_WriteEna    <= false;                
+						state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers; 
+						alma <= "001";
+					elsif ((\num_incr\ = 15) and (\num_incr_sum\ < NumOfElements +2)) then    
+						ArePrimenums_WriteAddr <= ArePrimenums_WriteAddr + 64;
+						ArePrimenums_WriteEna <= true;    
+						alma <= "010";
+						if \WritesDone\ = true then  
+							ArePrimenums_WriteEna <= false;                    
+							state_SM_ArePrimeNumbers <= ST003_ArePrimeNumbers; 
+						end if;
+					elsif (\num_incr_sum\ = NumOfElements +2) then    
+					alma <= "011";
+						ArePrimenums_DataOut(511 downto (NumOfElements - 14) * 32) <= \DataIn\(511 downto (NumOfElements -14) * 32);                                                                                                           
+						--ArePrimenums_WriteAddr <= ArePrimenums_WriteAddr + 64;
+						ArePrimenums_WriteEna <= true; 
+						--if \WritesDone\ = true then  
+						--	ArePrimenums_WriteEna <= false;                    
+							state_SM_ArePrimeNumbers <= ST008x_ArePrimeNumbers; --ST009_ArePrimeNumbers; 
+						--end if;  
+					end if; 
+					
+					when ST008x_ArePrimeNumbers =>
+						if \WritesDone\ = true then  
+							ArePrimenums_WriteEna <= false; 
+							ArePrimenums_WriteAddr <= ArePrimenums_WriteAddr + 64;                                                                                                                                            
+							state_SM_ArePrimeNumbers <= ST009_ArePrimeNumbers;
+						end if; 
 						
 					when ST009_ArePrimeNumbers =>
 						ArePrimenums_Finish   <= true;
@@ -948,9 +1051,7 @@ begin
 				end case; 
 			end if;    
 		end if;                                          
-	end process;     
-	
-	                                                 
+	end process;                                                      
 		
 		
 -- Signal assignments:
@@ -1009,4 +1110,4 @@ begin
 end Imp;                                                      
                                                                                       
                                                               
-                                                              
+                                  
