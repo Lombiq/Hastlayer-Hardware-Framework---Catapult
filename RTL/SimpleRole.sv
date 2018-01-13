@@ -294,7 +294,7 @@ PCI_outdata = 127'b0;
                 mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b1, addr: writeAddr, data: loopbackQ_out.data};
                 
                 if(mem_interleaved_req_grant) begin
-                    next_writeAddr = writeAddr + 64'd64;
+                    next_writeAddr = writeAddr + 64'd16;
                     next_jobSize = jobSize + 32'd1;
                     loopbackQ_deq = 1'b1;
                     
@@ -330,7 +330,11 @@ PCI_outdata = 127'b0;
 	         if (Hast_IP_Write_Ena_out == 1'b1) begin		  
 		          //mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b1, addr: Hast_IP_Write_Addr_out_sig, data: Hast_IP_Data_out};  
 					 mem_interleaved_req = '{valid: 1'b1, isWrite: 1'b1, addr: Hast_IP_Write_Addr_out, data: Hast_IP_Data_out}; 
-					 if(mem_interleaved_req_grant) begin
+					 if (Hast_IP_Finished_out == 1'b1) begin
+					     next_state = HAST_READ; 
+					 end
+					 
+					 else if(mem_interleaved_req_grant) begin
                     next_state = READ;                   
                 end
             end
@@ -342,7 +346,7 @@ PCI_outdata = 127'b0;
             
             if(mem_interleaved_req_grant) begin
                 Hast_IP_Writes_Done_in = mem_interleaved_resp.valid;
-                next_readAddr = readAddr + 64'd64;
+                next_readAddr = readAddr + 64'd16;
                 next_jobSize = jobSize - 32'd1;
                 
                 //if(next_jobSize == 32'd0) begin
