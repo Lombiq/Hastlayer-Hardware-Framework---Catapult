@@ -30,7 +30,7 @@ Double check the environmental variables! On the Microsoft Catapult node you can
 - If Modelsim works, but Quartus project compilation doesn't, check that the right Device has been chosen for your project. The device name has to be "5SGSMD5H2F35I3L". The Catapult support also suggests to keep the .qsf file read-only, becouse it might get corrupted somethimes.
 - If none of the above helped, write to the Catapult Support for help on catapsup@microsoft.com. 
 
-### Modelsim Simulation Issues
+### Modelsim Simulation issues
 
 We use Modelsim to simulate Simplerole and our IP cores instantiated in it for test and development purposes.
 You can pull in selected signals to the Modelsim wave window, which you want to examine. You are also able to manipulate these signals, like set radix, organize signals into groups, etc. This setup of signals can be saved to a .do file so you don't have to setup your signals every time when you run a test in Modelsim.
@@ -54,5 +54,12 @@ In this case you might get an error message: "Device driver is disabled. Cannot 
 - There is no possibility to power-cycle the FPGA remotely, so the best choise in this case it to ask the Catapult Support to turn on and off the device (catapsup@microsoft.com).
 - Another workaround is to go to the Windows Device Manager, right click on the “Catapult FPGA device” and make sure it is enabled.  If it isn’t, check the properties and see if there is an error.  You can also attempt to enable the card from there. 
 
+###SignalTap Logic Analyzer issue
 
-                                            
+SignalTap is the Altera Quartus Prime built-in logic analyzer. We use it to debug FPGA signals when the design runs on the device, so it's not simulation, but real signals.
+To check how to add SignalTap to your FPGA design, and how to use it, see the Catapult User Guide v1.2.pdf, starting from page 26. (8.2 Adding SignalTap to Your Design) section.
+It might happen, that when you click on the "Scan Chain" button, the status does not switch from “Program the device to continue” to “Ready to acquire”. USB blaster might not detect the FPGA, so you can't inspect FPGA signals.
+In this case you should check the following:
+- You should uncheck "read only" for the project files. Right click on each project file, go to "Properties", and de-select "Read-only", enable SignalTap, then regenerate the bitfile. Note: This contradicts with one of the suggestions in the "Quartus Prime license issue" above, but this hint came from the Catapult Support Team, and it worked.
+- Double check if the right .stp file is being used with the .rpd that it was compiled against. You can’t use older .stp files – it always has to be the exact one that you used when compiling.                                                                             
+- Check FPGA status with FPGADiagnostics.exe. If it seems to be in a non-responsive state, ask Catapult Support to power-cycle the FPGA.                                                                                                                                                                  
