@@ -88,7 +88,7 @@ int main()
 {
 	//CONST data
 	//DWORD testData[] = {2,10,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21};
-	DWORD testData[] = { 2,20,3,3,3,3,3,3,3,3,3,3,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,2,20,3,3,3,3,3,3,3,3,3,3,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30 ,2,20,3,3,3,3,3,3,3,3,3,3,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,2,20,3,3,3,3,3,3,3,3,3,3,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30 };
+	DWORD testData[] = { 1,20,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,2,20,3,3,3,3,3,3,3,3,3,3,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30 ,2,20,3,3,3,3,3,3,3,3,3,3,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,2,20,3,3,3,3,3,3,3,3,3,3,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30 };
 
 	FPGA_STATUS fpgaStatusFlag;
 	FPGA_HANDLE fpgaHandle;
@@ -105,7 +105,12 @@ int main()
 	fpgaStatusFlag= FPGA_CreateHandle(&fpgaHandle, PCIE_HIP_NUM, 0x0, NULL, NULL);
 	printf("Status FPGA FPGA_CreateHandle: %d\n", fpgaStatusFlag);
 	// Grab pinned input and output buffers
+	FPGA_WriteSoftRegister(fpgaHandle, CONFIG_DRAM_CHAN0, 0);
 	enablePCIe(fpgaHandle);
+	DWORD reg = -1;
+	FPGA_ReadShellRegister(fpgaHandle, 0, &reg);
+	printf("Control register value: 0x%08x\n", reg);
+
 	fpgaStatusFlag=	FPGA_GetInputBufferPointer(fpgaHandle, whichBuffer, &pInputBuffer);
 	printf("Status FPGA FPGA_GetInputBufferPointer: %d\n", fpgaStatusFlag);
 	fpgaStatusFlag = FPGA_GetOutputBufferPointer(fpgaHandle, whichBuffer, &pOutputBuffer);
