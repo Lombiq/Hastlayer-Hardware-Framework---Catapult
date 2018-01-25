@@ -4,20 +4,20 @@ use ieee.numeric_std.all;
 
 entity Hast_ip_wrapper is
 	port (
-		Hast_IP_Clk_in          : in  std_logic;
-		Hast_IP_Rst_in          : in  std_logic;
-		Hast_IP_MemberID_in     : in  std_logic_vector(31 downto 0);
-		Hast_IP_Data_in         : in  std_logic_vector(511 downto 0);
-		Hast_IP_Data_out        : out std_logic_vector(511 downto 0);
-		Hast_IP_Read_Addr_out   : out std_logic_vector(31 downto 0);
-		Hast_IP_Read_Ena_out    : out std_logic;
-		Hast_IP_Write_Addr_out  : out std_logic_vector(31 downto 0);
-		Hast_IP_Write_Ena_out   : out std_logic;
-		Hast_IP_Started_in      : in  std_logic;
-		Hast_IP_Finished_out    : out std_logic;
-		Hast_IP_Reads_Done_in   : in  std_logic;
-		Hast_IP_Writes_Done_in  : in  std_logic;
-		Hast_IP_Performance_out : out std_logic_vector(31 downto 0)
+		Hast_IP_Clk_in             : in  std_logic;
+		Hast_IP_Rst_in             : in  std_logic;
+		Hast_IP_MemberID_in        : in  std_logic_vector(31 downto 0);
+		Hast_IP_Data_in            : in  std_logic_vector(511 downto 0);
+		Hast_IP_Data_out           : out std_logic_vector(511 downto 0);
+		Hast_IP_Read_Addr_out      : out std_logic_vector(31 downto 0);
+		Hast_IP_Read_Ena_out       : out std_logic;
+		Hast_IP_Write_Addr_out     : out std_logic_vector(31 downto 0);
+		Hast_IP_Write_Ena_out      : out std_logic;
+		Hast_IP_Started_in         : in  std_logic;
+		Hast_IP_Finished_out       : out std_logic;
+		Hast_IP_Reads_Done_in      : in  std_logic;
+		Hast_IP_Writes_Done_in     : in  std_logic;
+		Hast_IP_Control_Packet_out : out std_logic_vector(511 downto 0)
 	);
 end Hast_ip_wrapper;
 		
@@ -44,34 +44,36 @@ architecture Imp of Hast_ip_wrapper is
 		end if;
 	end Std_logic_to_bool;
 		
-	signal Hast_IP_MemberID_in_sig        : std_logic_vector(31 downto 0);
-	signal Hast_IP_MemberID_in_int        : integer;
-	signal Hast_IP_StartCellIndex_out_sig : std_logic_vector(31 downto 0);
+	signal Hast_IP_MemberID_in_sig     : std_logic_vector(31 downto 0);
+	signal Hast_IP_MemberID_in_int     : integer;
+	signal Hast_IP_CellIndex_out_sig   : std_logic_vector(31 downto 0);
 		
-	signal Hast_IP_Read_Addr_out_sig      : std_logic_vector(31 downto 0);
-	signal Hast_IP_Write_Addr_out_sig     : std_logic_vector(31 downto 0);
-	signal Hast_IP_Read_Ena_out_sig       : std_logic;
-	signal Hast_IP_Write_Ena_out_sig      : std_logic;
-	signal Hast_IP_Finished_out_sig       : std_logic;
+	signal Hast_IP_Read_Addr_out_sig   : std_logic_vector(31 downto 0);
+	signal Hast_IP_Write_Addr_out_sig  : std_logic_vector(31 downto 0);
+	signal Hast_IP_Read_Ena_out_sig    : std_logic;
+	signal Hast_IP_Write_Ena_out_sig   : std_logic;
+	signal Hast_IP_Finished_out_sig    : std_logic;
 	                                      
-	signal Hast_IP_Data_in_sig            : std_logic_vector(511 downto 0);
-	signal Hast_IP_Data_out_sig           : std_logic_vector(511 downto 0);
+	signal Hast_IP_Data_in_sig         : std_logic_vector(511 downto 0);
+	signal Hast_IP_Data_out_sig        : std_logic_vector(511 downto 0);
+	
 		
 	--Performance Counter signals 
 	--signal Performance_Counter_Ena    : std_logic;
 		
 	--Signals for typecast
-	signal Hast_IP_StartCellIndex_out_int : integer;
-	signal Hast_IP_reads_done_in_bool     : boolean;
-	signal Hast_IP_writes_done_in_bool    : boolean;
-	signal Hast_IP_Read_Ena_out_bool      : boolean;
-	signal Hast_IP_Write_Ena_out_bool     : boolean;
-	signal Hast_IP_Started_in_bool        : boolean;
-	signal Hast_IP_Finished_out_bool      : boolean;
+	signal Hast_IP_CellIndex_out_int   : integer;
+	signal Hast_IP_reads_done_in_bool  : boolean;
+	signal Hast_IP_writes_done_in_bool : boolean;
+	signal Hast_IP_Read_Ena_out_bool   : boolean;
+	signal Hast_IP_Write_Ena_out_bool  : boolean;
+	signal Hast_IP_Started_in_bool     : boolean;
+	signal Hast_IP_Finished_out_bool   : boolean;
 	
-	--Performance Counter signals 
-	signal Cnt                  : unsigned(31 downto 0);
-	signal sig_hast_performance : std_logic_vector(31 downto 0);
+	--Performance Counter and control signals 
+	signal Cnt                            : unsigned(63 downto 0);
+	signal Hast_IP_Control_Packet_out_sig : std_logic_vector(511 downto 0);
+	signal First_Packet_sig               : std_logic;
 		
 	--State macine states
 	type SM_PERFORMANCE_CNTR is (ST00_Idle,
@@ -84,7 +86,7 @@ architecture Imp of Hast_ip_wrapper is
 	port(
 		\DataIn\:         in  std_logic_vector(511 downto 0);
 		\DataOut\:        out std_logic_vector(511 downto 0);
-		\StartCellIndex\: out integer;
+		\CellIndex\:      out integer;
 		\ReadEnable\:     out boolean;
 		\WriteEnable\:    out boolean;
 		\ReadsDone\:      in  boolean;
@@ -112,7 +114,7 @@ begin
 	port map(
 		\DataIn\         => Hast_IP_Data_in_sig,                      
 		\DataOut\        => Hast_IP_Data_out_sig,                     
-		\StartCellIndex\ => Hast_IP_StartCellIndex_out_int,             
+		\CellIndex\      => Hast_IP_CellIndex_out_int,             
 		\ReadEnable\     => Hast_IP_Read_Ena_out_bool,                 
 		\WriteEnable\    => Hast_IP_Write_Ena_out_bool,           
 		\ReadsDone\      => Hast_IP_reads_done_in_bool,         
@@ -136,19 +138,19 @@ begin
 	Hast_IP_Write_Ena_out <= Hast_IP_Write_Ena_out_sig;
 	Hast_IP_Finished_out  <= Hast_IP_Finished_out_sig;
 		                                                                         
-	--Hast_IP_StartCellIndex_out_sig <= std_logic_vector(to_unsigned(Hast_IP_StartCellIndex_out_int,32)); 
-	Hast_IP_StartCellIndex_out_sig <= std_logic_vector(to_unsigned(Hast_IP_StartCellIndex_out_int,32));
+	--Hast_IP_CellIndex_out_sig <= std_logic_vector(to_unsigned(Hast_IP_CellIndex_out_int,32)); 
+	Hast_IP_CellIndex_out_sig <= std_logic_vector(to_unsigned(Hast_IP_CellIndex_out_int,32));
 		
-	Read_Write_Address_Choice : process(Hast_IP_Rst_in, Hast_IP_Read_Ena_out_sig, Hast_IP_Write_Ena_out_sig, Hast_IP_StartCellIndex_out_sig)
+	Read_Write_Address_Choice : process(Hast_IP_Rst_in, Hast_IP_Read_Ena_out_sig, Hast_IP_Write_Ena_out_sig, Hast_IP_CellIndex_out_sig)
 	begin
 		if Hast_IP_Rst_in = '1' then
 			Hast_IP_Read_Addr_out_sig  <= (others => '0');
 			Hast_IP_Write_Addr_out_sig <= (others => '0');
 		else
 			if Hast_IP_Read_Ena_out_sig = '1' then
-				Hast_IP_Read_Addr_out_sig <= Hast_IP_StartCellIndex_out_sig;
+				Hast_IP_Read_Addr_out_sig <= Hast_IP_CellIndex_out_sig;
 			elsif Hast_IP_Write_Ena_out_sig = '1' then
-				Hast_IP_Write_Addr_out_sig <= Hast_IP_StartCellIndex_out_sig;
+				Hast_IP_Write_Addr_out_sig <= Hast_IP_CellIndex_out_sig;
 			end if;
 		 end if;
 	end process;
@@ -186,7 +188,21 @@ begin
 			end if;
 		end if;    
 	end process; 
+	
+	Controlpacket: process(Hast_IP_Clk_in)
+	begin
+		if (rising_edge(Hast_IP_Clk_in)) then
+			if Hast_IP_Rst_in = '1' then        
+				Hast_IP_Control_Packet_out_sig <= (others => '0'); 
+				First_Packet_sig <= '0';
+			elsif Hast_IP_Started_in = '1' and Hast_IP_Reads_Done_in = '1' and First_Packet_sig = '0' then 
+				Hast_IP_Control_Packet_out_sig <= Hast_IP_Data_in;
+				First_Packet_sig <= '1';
+				
+			end if;
+		end if;
+	end process; 
 		
-	sig_hast_performance <= std_logic_vector(Cnt);
+	Hast_IP_Control_Packet_out <= x"000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" & std_logic_vector(Cnt) & Hast_IP_Control_Packet_out_sig(63 downto 0);
 		
 end Imp;
