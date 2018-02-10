@@ -195,7 +195,7 @@ begin
 			if Hast_IP_Rst_in = '1' then        
 				Hast_IP_Control_Packet_out_sig <= (others => '0'); 
 				First_Packet_sig <= '0';
-			elsif Hast_IP_Started_in = '1' and Hast_IP_Reads_Done_in = '1' and First_Packet_sig = '0' then 
+			elsif Hast_IP_Started_in = '1' and Hast_IP_Read_Ena_out_sig = '1' and First_Packet_sig = '0' then 
 				Hast_IP_Control_Packet_out_sig <= Hast_IP_Data_in;
 				First_Packet_sig <= '1';
 				
