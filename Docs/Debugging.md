@@ -45,7 +45,7 @@ The solution in this case is the following:
 - After the batch mode simulation finished, you need to start Modelsim GUI, and load the .wlf file.
 If you get into any Modelsim related issue, [Modelsim User's Manual](https://www.microsemi.com/document-portal/doc_view/131619-modelsim-user) is a good start for searching. 
 
-###FPGA error
+### FPGA error
 
 Rarely we need to encounter the issue that the FPGA gets stuck. It turns out that the FPGA can not be reconfigured, you can't rewrite the flash memory, you can't get any diagnostics data, etc.
 In this case you might get an error message: "Device driver is disabled. Cannot enable Device driver."
@@ -54,7 +54,7 @@ In this case you might get an error message: "Device driver is disabled. Cannot 
 - There is no possibility to power-cycle the FPGA remotely, so the best choise in this case it to ask the Catapult Support to turn on and off the device (catapsup@microsoft.com).
 - Another workaround is to go to the Windows Device Manager, right click on the “Catapult FPGA device” and make sure it is enabled.  If it isn’t, check the properties and see if there is an error.  You can also attempt to enable the card from there. 
 
-###SignalTap Logic Analyzer issue
+### SignalTap Logic Analyzer issue
 
 SignalTap is the Altera Quartus Prime built-in logic analyzer. We use it to debug FPGA signals when the design runs on the device, so it's not simulation, but real signals.
 To check how to add SignalTap to your FPGA design, and how to use it, see the Catapult User Guide v1.2.pdf, starting from page 26. (8.2 Adding SignalTap to Your Design) section.
