@@ -14,6 +14,10 @@ For more information of the AcademicDRAMLoopback example project, and the Loopba
 
 The most important sources of the HastlayerHardwareFramework-Catapult project are detailed below.
 
+As a baseline the Hastlayer Hardware Framework itself takes about this much resources (with the Loopback sample) from the FPGA: 
+
+![Resource Utilization](Images/LoopbackResourceUsage.png) 
+
 
 ## The HastlayerHardwareFramework-Catapult project
 
