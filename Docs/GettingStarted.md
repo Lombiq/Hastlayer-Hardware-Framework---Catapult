@@ -4,13 +4,13 @@
 
 On the Catapult node clone this repository to a subfolder of *E:\catapult\v1.2\Roles* (the default Catapult location, which you should use) with a folder name something like *HastlayerHardwareFramework-Catapult*. Make sure that the folder is not read-only.
 
-The HastlayerHardwareFramework-Catapult FPGA design is a modified version of the formerly created [Hastlayer Hardware Framework - Xilinx](https://github.com/Lombiq/Hastlayer-Hardware-Framework---Xilinx). The design runs on a [Microsoft Catapult](https://www.microsoft.com/en-us/research/project/project-catapult/) node, which consists of a Host-PC, and an "Mt Granite" FPGA board connected to it. Mt Granite contains an Altera Stratix V 5SGSMD5H2F35 and two channels of DDR3, each providing 4GB for a total of 8GB. The card connects to the server (Host-PC) via eight lanes of Gen3 PCI Express (PCIe). For a detailed description of the Mt Granite card, you can check the "Mt Granite Architectural Spec" document available on the Catapult network.
+The HastlayerHardwareFramework-Catapult FPGA design is a modified version of the formerly created [Hastlayer Hardware Framework - Xilinx](https://github.com/Lombiq/Hastlayer-Hardware-Framework---Xilinx). The design runs on a [Microsoft Catapult](https://www.microsoft.com/en-us/research/project/project-catapult/) node, which consists of a Host-PC, and an "Mt Granite" FPGA board connected to it. Mt Granite contains an Altera Stratix V 5SGSMD5H2F35 and two channels of DDR3, each providing 4GB for a total of 8GB. The card connects to the server (Host-PC) via eight lanes of Gen3 PCI Express (PCIe). For a detailed description of the Mt Granite card, you can check the "Mt Granite Architectural Spec" document.
 
 The HastlayerHardwareFramework-Catapult FPGA project originates from the AcademicDRAMLoopback example project, which is provided by Microsoft. This is a simple loopback test, which uses PCIe, and FPGA -> Memory operations. In this example project, the Host-PC sends data to the FPGA board via PCIe. Each transmission consists of 128 bits of data, plus control bits (buffer number, last bit, and pad). The incoming data is written to the DDR3 memory by the FPGA. The memory can be addressed via 64 bit addresses, on a simplified memory interface. After all of the incoming data has been written to the memory (we got a last bit on the PCIe), we start to read memory. The data is then sent back to the PC via PCIe packet by packet.
 
 A PC-side software is also needed to see the operation of the AcademicDRAMLoopback example project. For this, Microsoft provided the LoopbackStressTest project, which can be recompiled in Microsoft Visual Studio, and can be used in PowerShell. During the project, a much easier PC-side software has been also created, this is the SimpleLoopbackTest (will be detailed in a later section).
 
-For more information of the AcademicDRAMLoopback example project, and the LoopbackStressTest you can check "Catapult TACC Getting Started Guide" and "Catapult User Guide" documents available on the Catapult network.
+For more information of the AcademicDRAMLoopback example project, and the LoopbackStressTest you can check "Catapult TACC Getting Started Guide" and "Catapult User Guide" documents.
 
 The most important sources of the HastlayerHardwareFramework-Catapult project are detailed below.
 
@@ -37,7 +37,7 @@ The RTL design files are located in the *RTL* folder.
 ## ModelSim Altera simulation
 
 Microsoft provided a simulation environment, in which they simulate the PC -> FPGA data flow, and you can also check your custom made logic created inside SimpleRole. You need a set of files to run the simulation.
--   *SimTop.sv*: This is a system verilog test file, which is located at *catapult\v1.2\Roles\Sim* on the Catapult network.
+-   *SimTop.sv*: This is a SystemVerilog test file which is located at *catapult\v1.2\Roles\Sim* on the Catapult network.
     
     SimTop simulates feeds SimpleRole with test data. You can only simulate SimpleRole, and the modules instantiated inside of it. No modules on a higher level than SimpleRole can be simulated.
 - *buildSim.ps1*: A PowerShell script that builds the simulation. At the top of the script you have to specify the PC side software project to run in the simulation (ie. LoopbackStressTest or SimpleLoopbackTest).

@@ -11,6 +11,7 @@ If you're not familiar with Hastlayer take a look at [https://hastlayer.com/](ht
 
 - [Getting started](Docs/GettingStarted.md)
 - [PowerShell scripts](Docs/PowerShellScripts.md)
+- [Catapult documentation](Docs/Catapult): All documentation provided by Catapult is available on the Catapult network but also copied here for your convenience.
 - [Troubleshooting](Docs/Troubleshooting.md)
 
 The authors acknowledge the [Texas Advanced Computing Center (TACC)](http://www.tacc.utexas.edu) at The University of Texas at Austin for providing {HPC, visualization, or storage} resources that have contributed to the development project work published in this project.
