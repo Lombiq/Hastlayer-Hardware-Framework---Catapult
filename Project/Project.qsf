@@ -1,1 +1,11 @@
+#
+# QSF
+#
+
+# initial settings
+
 set_global_assignment -name SOURCE_TCL_SCRIPT_FILE Project.tcl
+set_global_assignment -name TOP_LEVEL_ENTITY Shell
+
+# settings added by Quartus
+
