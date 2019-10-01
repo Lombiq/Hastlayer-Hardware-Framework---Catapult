@@ -12,6 +12,9 @@ If you're not familiar with Hastlayer take a look at [https://hastlayer.com/](ht
 - [Getting started](Docs/GettingStarted.md)
 - [PowerShell scripts](Docs/PowerShellScripts.md)
 - [Catapult documentation](Docs/Catapult): All documentation provided by Catapult is available on the Catapult network but also copied here for your convenience.
+    - Catapult TACC Getting Started Guide: Details how to access your TACC Catapult node, set up your development environment, and run the FPGA application example. Note that the document may not refer to the most recent version of the Catapult Shell, but still use the latest one. On what scripts to run to get the FPGA working with a given design start from section 2.3 (page 10). But we also have scripts for that, see [PowerShell scripts](Docs/PowerShellScripts.md).
+    - Mt Granite Architectural Spec: Describes the Catapult FGPA (Mt Granite) board architecture in details.
+    - Catapult User Guide: A very good reference for developing and debugging your FPGA design in Catapult.
 - [Troubleshooting](Docs/Troubleshooting.md)
 
 The authors acknowledge the [Texas Advanced Computing Center (TACC)](http://www.tacc.utexas.edu) at The University of Texas at Austin for providing {HPC, visualization, or storage} resources that have contributed to the development project work published in this project.
