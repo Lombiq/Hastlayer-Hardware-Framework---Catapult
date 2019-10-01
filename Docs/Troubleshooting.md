@@ -9,7 +9,7 @@ The Microsoft Catapult Project is constantly evolving so you might need to face 
 
 Rarely we need to encounter the issue that the FPGA gets stuck. It turns out that the FPGA can not be reconfigured, you can't rewrite the flash memory, you can't get any diagnostics data, etc. In this case you might get an error message: "Device driver is disabled. Cannot enable Device driver."
 
-![Device driver error](Images/Device_driver_error.png)  
+![Device driver error](Images/DeviceDriverError.png)  
 
 - According to the Catapult Support answer, if you try to program a *.sof* binary to the FPGA (instead of an *.rpd* file), the device goes into a non-responsive state. The workaround is to create an *.rpd* of your SignalTap image and load it into the Factory Slot on the flash using `rsu.exe -write <filename.rpd>`, then use `rsu.pgm -reconfig` to switch to your SignalTap image. Then you should be able to run SignalTap as usual.
 - There is no possibility to power-cycle the FPGA remotely, so the best choice in this case it to ask the Catapult Support to turn on and off the device (catapsup@microsoft.com).
@@ -25,7 +25,7 @@ In November 2017 Microsoft changed its license servers from troy.tacc.utexas.edu
 
 After the license server moved, we had got licensing issues constantly. The error message says: "**Error: Faliure to obtain a Verilog simulation license. Unable to checkout any of the license features: alteramtivsim or alteramtivlog. Error loading design."
 
-![ModelSim licensing error](Images/ModelSim_license_error.png)  
+![ModelSim licensing error](Images/ModelSimLicenseError.png)  
 
 The issue was escalated to Altera, and they fixed the issue. The setup of the environmental variables is also corrected in "Catapult TACC Getting Started Guide v1.2".
 
@@ -54,7 +54,7 @@ The waveform can be also saved in a *.wlf* file, which is the only way to examin
 
 There is an error which occurs sometimes, when you quit ModelSim, and you want to restart it later - in batch mode - with another simulation. The message says: "Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf." However ModelSim is not running currently, some process still holds the previously generated *.wlf* file for some reason. This is only a warning message, but you have to deal with it, because ModelSim cannot be started. 
 
-![ModelSim licensing error](Images/ModelSim_vsim_wlf_error.png) 
+![ModelSim vsim WLF error](Images/ModelSimVsimWlfError.png) 
  
 The solution in this case is the following: 
 1. You need to navigate to the simulation directory (*e:\catapult\v1.2\Roles\HastlayerHardwareFramework-Catapult\Sim*) and delete the previously generated *vsim.wlf* file.
