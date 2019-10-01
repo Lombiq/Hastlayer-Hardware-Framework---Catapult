@@ -2,7 +2,7 @@
 
 
 
-The [Hastlayer](http://hastlayer.com/) FPGA-side for [Project Catapult](https://www.microsoft.com/en-us/research/academic-program/project-catapult-academic-program/) FPGAs.
+The [Hastlayer](https://hastlayer.com/) FPGA-side for [Project Catapult](https://www.microsoft.com/en-us/research/project/project-catapult/) FPGAs.
 
 If you're not familiar with Hastlayer take a look at [https://hastlayer.com/](https://hastlayer.com/).
 
@@ -11,5 +11,5 @@ If you're not familiar with Hastlayer take a look at [https://hastlayer.com/](ht
 
 - [Getting started](Docs/GettingStarted.md)
 - [PowerShell scripts](Docs/PowerShellScripts.md)
-- [Debugging](Docs/Debugging.md)
+- [Troubleshooting](Docs/Troubleshooting.md)
 
