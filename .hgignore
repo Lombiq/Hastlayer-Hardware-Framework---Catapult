@@ -4,3 +4,8 @@ Project/incremental_db/*
 Project/output_files/*
 *.qws
 x64/*
+Project/ddr3_dimm0_p0_summary.csv
+Project/ddr3_dimm1_p0_summary.csv
+Project/quartus.ini
+Project/PLLJ_PLLSPE_INFO.txt
+Project/Project_assignment_defaults.qdf
