@@ -122,9 +122,12 @@ module SimpleRole
         
     // Hast_IP.vhd
 
-    reg [7:0] ALLOWED_SLOTS = 4;
-    reg [15:0] ALLOWED_BYTES_PER_SLOT = 16'h0100;
+    // reg [7:0] ALLOWED_SLOTS = 4;
+    // reg [15:0] ALLOWED_BYTES_PER_SLOT = 16'h0100;
     
+    reg [7:0] ALLOWED_SLOTS = 64;
+    reg [15:0] ALLOWED_BYTES_PER_SLOT = 16'hFF80;
+
     // parameter ALLOWED_SLOTS = 64;
     // parameter ALLOWED_BYTES_PER_SLOT = 16'hFF80;
 
@@ -192,7 +195,7 @@ module SimpleRole
     FSMState state = IDLE;
     reg [PCIE_SLOT_WIDTH-1:0] headerSlotId;
     reg[31:0] headerMemberId;
-    reg[31:0] headerDataLengthBytes;
+    reg[31:0] headerPayloadLengthCells;
     reg[31:0] headerSliceIndex;
     reg[31:0] headerSliceCount;
     reg[63:0] writeAddr;
@@ -216,7 +219,7 @@ module SimpleRole
             
                 IDLE:
                     begin
-                        hastipMemberId = headerMemberId; // HAST_IP_MEMBER_ID;
+                        hastipMemberId = headerMemberId;
                         hastipStarted = 0;
                         hastipReadsDone = 0;
                         hastipWritesDone = 0;
@@ -234,12 +237,11 @@ module SimpleRole
                 
                 PCIE_RECV_HEADER:
                     begin
-                        // header = pcie_packet_in.data;
-                        headerSlotId          = pcie_packet_in.slot;
-                        headerMemberId        = pcie_packet_in.data[0*32+31:0*32];
-                        headerDataLengthBytes = pcie_packet_in.data[1*32+31:1*32];
-                        headerSliceIndex      = pcie_packet_in.data[2*32+31:2*32];
-                        headerSliceCount      = pcie_packet_in.data[3*32+31:3*32];
+                        headerSlotId             = pcie_packet_in.slot;
+                        headerMemberId           = pcie_packet_in.data[0*32+31:0*32];
+                        headerPayloadLengthCells = pcie_packet_in.data[1*32+31:1*32];
+                        headerSliceIndex         = pcie_packet_in.data[2*32+31:2*32];
+                        headerSliceCount         = pcie_packet_in.data[3*32+31:3*32];
                         writeAddr = ALLOWED_BYTES_PER_SLOT * pcie_packet_in.data[2*32+31:2*32];
                         if (pcie_packet_in.valid) begin
                             acceptedSliceCount = acceptedSliceCount + 1;
@@ -301,7 +303,7 @@ module SimpleRole
                 
                 RUN:
                     begin
-                        hastipMemberId = headerMemberId; // HAST_IP_MEMBER_ID;
+                        hastipMemberId = headerMemberId;
                         hastipStarted = 1;
                         hastipReadsDone = 0;
                         hastipWritesDone = 0;
@@ -366,9 +368,7 @@ module SimpleRole
                         pcie_packet_out.valid = 1'b1;
                         pcie_packet_out.last = 1'b0;
                         pcie_packet_out.data[63:00] = hastipRunTime;
-                        // pcie_packet_out.data[95:64] = headerSliceIndex;
-                        // pcie_packet_out.data[127:96] = (writeAddr + ALLOWED_BYTES_PER_SLOT - 1) / ALLOWED_BYTES_PER_SLOT; // headerSliceCount;
-                        pcie_packet_out.data[95:64] = receivedByteCount >> 2;
+                        pcie_packet_out.data[95:64] = headerPayloadLengthCells;
                         pcie_packet_out.data[127:96] = headerSliceIndex;
                         readLen = ALLOWED_BYTES_PER_SLOT;
                         if (pcie_grant_in) begin
@@ -440,7 +440,6 @@ module SimpleRole
                 PCIE_SEND_DONE:
                     begin
                         mem_interleaved_resp_grant = 1'b0;
-                        // headerSlotId = (headerSlotId + 1) % ALLOWED_SLOTS;
                         if (headerSlotId == (ALLOWED_SLOTS -1)) begin
                           headerSlotId = 0;
                         end else begin
@@ -468,7 +467,7 @@ module SimpleRole
                     pcie_packet_out.last = 1'b0;
                     pcie_packet_out.slot = headerSlotId;
                     pcie_packet_out.data[0*32+31:0*32] = headerMemberId;
-                    pcie_packet_out.data[1*32+31:1*32] = headerDataLengthBytes;
+                    pcie_packet_out.data[1*32+31:1*32] = headerPayloadLengthCells;
                     pcie_packet_out.data[2*32+31:2*32] = headerSliceIndex;
                     pcie_packet_out.data[3*32+31:3*32] = headerSliceCount;
                     if (pcie_grant_in) begin
@@ -482,7 +481,6 @@ module SimpleRole
                   begin
                     if (pcie_grant_in) begin
                       pcie_packet_out.valid = 1'b0;
-                      //if (headerSliceIndex == headerSliceCount - 1) begin
                       if (acceptedSliceCount == headerSliceCount) begin
                         hastipRunCounter = 0;
                         state = RUN;
@@ -520,7 +518,7 @@ module SimpleRole
           softreg_resp.valid = 1;
           case (softreg_req.addr)
             64'h00: softreg_resp.data = 64'h704974736148; // HastIp
-            64'h01: softreg_resp.data = 64'h0001; // v 0.1
+            64'h01: softreg_resp.data = 64'h0002; // v 0.2
             64'h02: softreg_resp.data = ALLOWED_SLOTS;
             64'h03: softreg_resp.data = ALLOWED_BYTES_PER_SLOT;
             64'h04: softreg_resp.data = writeAddr;
