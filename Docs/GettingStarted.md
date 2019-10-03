@@ -37,6 +37,9 @@ The RTL design files are located in the *RTL* folder.
 - *SimpleRole.sv*: The actual role containing user logic. This logic handles the PCIe communication with the Host-PC, controls memory operations, and communicates with our custom modules. Hast_IP is also instantiated under this source.
 - *Hast_IP.vhd*: Placeholder for the automatically generated Hastlayer hardware logic. This file needs to be overwritten when a different user logic is used.
 
+### The Testbed project
+A simple testbed project is included as well. This contains only *Hast_IP.vhd* as the only module with virtual pins. The purpose of this project is to provide a way to test the compilation of just a Hast_IP implementation individually, without the rest of the Hardware Framework.
+
 
 ## ModelSim Altera simulation
 
