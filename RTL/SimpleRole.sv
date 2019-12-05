@@ -131,7 +131,7 @@ module SimpleRole
     // parameter ALLOWED_SLOTS = 64;
     // parameter ALLOWED_BYTES_PER_SLOT = 16'hFF80;
 
-    parameter HAST_IP_DATA_WIDTH = 512;
+    parameter HAST_IP_DATA_WIDTH = 32;
     parameter HAST_IP_MEMBER_ID = 0;
     
     // localparam FPGA_USER_CLOCK = `FPGA_USER_CLOCK;
@@ -518,7 +518,7 @@ module SimpleRole
           softreg_resp.valid = 1;
           case (softreg_req.addr)
             64'h00: softreg_resp.data = 64'h704974736148; // HastIp
-            64'h01: softreg_resp.data = 64'h0002; // v 0.2
+            64'h01: softreg_resp.data = 64'h0004; // v 0.4
             64'h02: softreg_resp.data = ALLOWED_SLOTS;
             64'h03: softreg_resp.data = ALLOWED_BYTES_PER_SLOT;
             64'h04: softreg_resp.data = writeAddr;
