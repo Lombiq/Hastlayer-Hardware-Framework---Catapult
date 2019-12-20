@@ -10,6 +10,7 @@ If you're not familiar with Hastlayer take a look at [https://hastlayer.com/](ht
 ## Table of contents
 
 - [Getting started](Docs/GettingStarted.md)
+- [Release notes](Docs/ReleaseNotes.md)
 - [PowerShell scripts](Docs/PowerShellScripts.md)
 - [Catapult documentation](Docs/Catapult): All documentation provided by Catapult is available on the Catapult network but also copied here for your convenience.
     - Catapult TACC Getting Started Guide: Details how to access your TACC Catapult node, set up your development environment, and run the FPGA application example. Note that the document may not refer to the most recent version of the Catapult Shell, but still use the latest one. On what scripts to run to get the FPGA working with a given design start from section 2.3 (page 10). But we also have scripts for that, see [PowerShell scripts](Docs/PowerShellScripts.md).
